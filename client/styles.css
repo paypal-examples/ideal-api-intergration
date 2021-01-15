@@ -34,12 +34,6 @@ body {
   align-items: center;
 }
 
-.loading {
-  font-size: 14px;
-  color: #2c2e2f;
-  text-align: center;
-}
-
 .hidden {
   display: none;
 }

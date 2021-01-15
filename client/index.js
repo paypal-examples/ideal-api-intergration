@@ -1,8 +1,12 @@
 const loadingEl = document.getElementById("loading");
+const warningMsgEl = document.getElementById("warning");
+
 
 fetch("/api/orders")
   .then((res) => res.json())
   .then((order) => {
+    warningMsgEl.classList.add("hidden");
+
     const idealForm = document.getElementById("ideal-form");
 
     idealForm.addEventListener("submit", (e) => {
@@ -28,9 +32,18 @@ fetch("/api/orders")
       })
         .then((res) => res.json())
         .then(({ redirectUrl }) => {
+          console.log({ redirectUrl })
           window.location.href = redirectUrl;
+          loadingEl.classList.remove("hidden");
         })
-        .catch(console.error);
+        .catch((err) => {
+          console.error(err)
+          loadingEl.classList.add("hidden");
+          warningMsgEl.classList.remove("hidden");
+        });
     });
   })
-  .catch(console.error);
+  .catch((err) => {
+    console.error(err)
+    warningMsgEl.classList.remove("hidden");
+  });

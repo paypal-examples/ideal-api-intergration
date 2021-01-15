@@ -1,13 +1,16 @@
 const express = require("express");
 const { resolve } = require("path");
 const axios = require("axios");
+const dotenv = require("dotenv")
+
+dotenv.config();
 
 const { getAccessToken } = require("./oauth");
-const { PAYPAL_API_URL, MERCHANT_URL } = require("./config");
+const { PAYPAL_API_URL, isProd } = require("./config");
 
 const app = express();
 
-const port = 8080
+const port = process.env.PORT || 8080;
 
 app.use(express.static(resolve(__dirname, "../client")));
 app.use(express.json());
@@ -33,6 +36,8 @@ app.get("/cancel", (req, res) => {
 app.get("/api/orders", async (req, res) => {
   const { access_token } = await getAccessToken();
 
+  const BASE_URL = `${isProd ? "https" : req.protocol}://${req.get("host")}`;
+
   /**
    * Example order,
    * these details would usually get pulled from the users cart session
@@ -48,8 +53,8 @@ app.get("/api/orders", async (req, res) => {
       },
     ],
     application_context: {
-      return_url: `${MERCHANT_URL}/success.html`,
-      cancel_url: `${MERCHANT_URL}/cancel.html`,
+      return_url: `${BASE_URL}/success.html`,
+      cancel_url: `${BASE_URL}/cancel.html`,
     },
   };
 
@@ -61,7 +66,7 @@ app.get("/api/orders", async (req, res) => {
     url: `${PAYPAL_API_URL}/v2/checkout/orders`,
     method: "post",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Accept: "application/json",
       Authorization: `Bearer ${access_token}`,
     },
@@ -83,7 +88,7 @@ app.post("/api/orders/:orderId/confirm-payment-source", async (req, res) => {
     url: `${PAYPAL_API_URL}/v2/checkout/orders/${orderId}/confirm-payment-source`,
     method: "post",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Accept: "application/json",
       Authorization: `Bearer ${access_token}`,
     },
@@ -159,11 +164,11 @@ app.post("/webhook", async (req, res) => {
   /* capture the order if approved */
   if (event_type === "CHECKOUT.ORDER.APPROVED") {
     try {
-      const { data } =  await axios({
+      const { data } = await axios({
         url: `${PAYPAL_API_URL}/v2/checkout/orders/${orderId}/capture`,
         method: "post",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Accept: "application/json",
           Authorization: `Bearer ${access_token}`,
         },
@@ -181,5 +186,5 @@ app.post("/webhook", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
-})
+  console.log(`Example app listening at http://localhost:${port}`);
+});

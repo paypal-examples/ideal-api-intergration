@@ -1,18 +1,15 @@
 # API Intergration with iDEAL 
 
-🚧 Under Development 🚧
 
-This integration uses the Paypal's API intergration to accept iDEAL payments
-
+This integration uses Paypal's REST API to accept iDEAL payments
 
 
-fork a copy on [codesandbox.io](https://githubbox.com/paypal-examples/ideal-api-intergration/tree/main)
-
+See a [hosted version](https://demo-ideal-api-intergration.herokuapp.com/)
 
 **Features:**
-- Client / Server API intergration
-- Webhooks events
-
+- EUR Bank transfers 💶
+- Paypal REST API intergration 
+- Webhooks events, on authorize  🪝
 
 
 **Demo:** 
@@ -23,6 +20,14 @@ fork a copy on [codesandbox.io](https://githubbox.com/paypal-examples/ideal-api-
 
 ### How to run locally
 
+Copy the .env.example file into a file named .env
+
+```
+cp .env.example .env
+```
+
+and configuring your .env config file with your Paypal API keys.
+
 1. Clone the repo  `git clone git@github.com:paypal-examples/ideal-api-intergration.git`
 2. Run `npm install`
 3. Run `npm start`
@@ -31,8 +36,6 @@ fork a copy on [codesandbox.io](https://githubbox.com/paypal-examples/ideal-api-
 
 &nbsp;
 
-### To run locally with a webhooks proxy
+###### Credits
 
-This will create a tunnel to localhost using ngrok
-
-Run `npm run start:webhooks`
+Shaylan Dias

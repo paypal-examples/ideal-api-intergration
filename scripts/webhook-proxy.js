@@ -1,5 +1,8 @@
 const ngrok = require("ngrok");
 const axios = require("axios");
+const dotenv = require("dotenv")
+
+dotenv.config();
 
 const { PAYPAL_API_URL } = require("../server/config");
 const { getAccessToken } = require("../server/oauth");
