@@ -1,10 +1,10 @@
 const ngrok = require("ngrok");
 const axios = require("axios");
-const dotenv = require("dotenv")
+const dotenv = require("dotenv");
 
 dotenv.config();
 
-const { PAYPAL_API_URL } = require("../server/config");
+const { PAYPAL_API_BASE } = require("../server/config");
 const { getAccessToken } = require("../server/oauth");
 
 (async function () {
@@ -13,6 +13,7 @@ const { getAccessToken } = require("../server/oauth");
   try {
     proxyURL = await ngrok.connect(8080);
   } catch(err){
+    console.log(err)
     console.log(`
     ###################################################################
     #                                                                 #
@@ -29,7 +30,7 @@ const { getAccessToken } = require("../server/oauth");
 
     // Create a webhook to the proxy url
     const { data } = await axios({
-      url: `${PAYPAL_API_URL}/v1/notifications/webhooks`,
+      url: `${PAYPAL_API_BASE}/v1/notifications/webhooks`,
       method: "post",
       headers: {
         Accept: "application/json",
@@ -52,7 +53,7 @@ const { getAccessToken } = require("../server/oauth");
       const { id } = data;
 
       await axios({
-        url: `${PAYPAL_API_URL}/v1/notifications/webhooks/${id}`,
+        url: `${PAYPAL_API_BASE}/v1/notifications/webhooks/${id}`,
         method: "delete",
         headers: {
           "Content-Type": "application/json",

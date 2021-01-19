@@ -10,8 +10,11 @@
   ],
   "dependencies": {
     "axios": "^0.21.1",
+    "chalk": "^4.1.0",
+    "color-json": "^2.0.1",
     "dotenv": "^8.2.0",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "tslog": "^3.0.5"
   },
   "devDependencies": {
     "ngrok": "^3.4.0"

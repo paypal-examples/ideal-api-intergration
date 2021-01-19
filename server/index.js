@@ -6,7 +6,8 @@ const dotenv = require("dotenv")
 dotenv.config();
 
 const { getAccessToken } = require("./oauth");
-const { PAYPAL_API_URL, isProd } = require("./config");
+const { PAYPAL_API_BASE, isProd } = require("./config");
+const log = require("./logger")
 
 const app = express();
 
@@ -58,12 +59,15 @@ app.get("/api/orders", async (req, res) => {
     },
   };
 
+  log.info("📦 Order Payload");
+  console.log(JSON.stringify(order, null, 4))
+
   /**
    * For more details on /v2/checkout/orders,
    * see https://developer.paypal.com/docs/api/orders/v2/#orders_create
    */
   const { data } = await axios({
-    url: `${PAYPAL_API_URL}/v2/checkout/orders`,
+    url: `${PAYPAL_API_BASE}/v2/checkout/orders`,
     method: "post",
     headers: {
       "Content-Type": "application/json",
@@ -73,19 +77,25 @@ app.get("/api/orders", async (req, res) => {
     data: order,
   });
 
+  log.info("📦 Order Response");
+  console.log(JSON.stringify(data, null, 4))
+  
   res.json(data);
 });
 
 app.post("/api/orders/:orderId/confirm-payment-source", async (req, res) => {
   const { orderId } = req.params;
   const { access_token } = await getAccessToken();
+  
+  log.info("📦 Confirm Order Payload");
+  console.log(JSON.stringify(req.body, null, 4))
 
   /**
    * For more details on /v2/checkout/orders/<orderId>/confirm-payment-source,
    * TODO: link
    */
   const { data } = await axios({
-    url: `${PAYPAL_API_URL}/v2/checkout/orders/${orderId}/confirm-payment-source`,
+    url: `${PAYPAL_API_BASE}/v2/checkout/orders/${orderId}/confirm-payment-source`,
     method: "post",
     headers: {
       "Content-Type": "application/json",
@@ -97,6 +107,9 @@ app.post("/api/orders/:orderId/confirm-payment-source", async (req, res) => {
 
   const redirectUrl = data.links.find((link) => link.rel === "payer-action")
     .href;
+
+  log.info("📦 Confirm Order Response");
+  console.log(JSON.stringify(data, null, 4))
 
   res.json({
     redirectUrl,
@@ -112,6 +125,9 @@ app.post("/webhook", async (req, res) => {
   const { id, event_type, resource } = req.body;
   const orderId = resource.id;
 
+  log.info(`🪝 Recieved Webhook Event Payload`)
+  console.log(JSON.stringify(req.body, null, 4))
+  
   /* verify the webhook signature */
 
   /* ** skip ** validation while endpoint gets looked at
@@ -132,9 +148,10 @@ app.post("/webhook", async (req, res) => {
   /*
   try {
     const { data } = await axios({
-      url: `${PAYPAL_API_URL}/v1/notifications/verify-webhook-signature`,
+      url: `${PAYPAL_API_BASE}/v1/notifications/verify-webhook-signature`,
       method: "post",
       headers: {
+        "Content-Type": "application/json",
         Accept: "application/json",
         Authorization: `Bearer ${access_token}`,
       },
@@ -165,7 +182,7 @@ app.post("/webhook", async (req, res) => {
   if (event_type === "CHECKOUT.ORDER.APPROVED") {
     try {
       const { data } = await axios({
-        url: `${PAYPAL_API_URL}/v2/checkout/orders/${orderId}/capture`,
+        url: `${PAYPAL_API_BASE}/v2/checkout/orders/${orderId}/capture`,
         method: "post",
         headers: {
           "Content-Type": "application/json",
@@ -174,10 +191,11 @@ app.post("/webhook", async (req, res) => {
         },
       });
 
-      console.log("💰 Payment captured! orderId: %s", data.id);
+      log.info(`💰 Payment captured!`);
+      console.log(JSON.stringify(data, null, 4))
+
     } catch (err) {
-      console.log("❌ Payment failed.");
-      console.error(err);
+      log.error(`❌ Payment failed.`);
       return res.sendStatus(400);
     }
   }
@@ -186,5 +204,5 @@ app.post("/webhook", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  log.info(`Example app listening at http://localhost:${port}`);
 });

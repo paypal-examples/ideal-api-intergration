@@ -1,19 +1,15 @@
-const CLIENT_ID =
-  process.env.CLIENT_ID;
+const { NODE_ENV, CLIENT_ID, CLIENT_SECRET } = process.env;
 
-const CLIENT_SECRET =
-  process.env.CLIENT_SECRET;
+const isProd = NODE_ENV === "production";
 
-const isProd = process.env.NODE_ENV === "production";
-
-const PAYPAL_API_URL = isProd
+const PAYPAL_API_BASE = isProd
   ? "https://api.paypal.com"
   : "https://api.sandbox.paypal.com";
 
 
 module.exports = {
   isProd,
-  PAYPAL_API_URL,
+  PAYPAL_API_BASE,
   CLIENT_ID,
   CLIENT_SECRET,
 };
