@@ -6,7 +6,7 @@ const dotenv = require("dotenv")
 dotenv.config();
 
 const { getAccessToken } = require("./oauth");
-const { PAYPAL_API_BASE, isProd } = require("./config");
+const { PAYPAL_API_BASE, WEBHOOK_ID, isProd } = require("./config");
 const log = require("./logger")
 
 const app = express();
@@ -59,8 +59,7 @@ app.get("/api/orders", async (req, res) => {
     },
   };
 
-  log.info("📦 Order Payload");
-  console.log(JSON.stringify(order, null, 4))
+  log.info("📦 Creating Order");
 
   /**
    * For more details on /v2/checkout/orders,
@@ -76,9 +75,6 @@ app.get("/api/orders", async (req, res) => {
     },
     data: order,
   });
-
-  log.info("📦 Order Response");
-  console.log(JSON.stringify(data, null, 4))
   
   res.json(data);
 });
@@ -87,8 +83,7 @@ app.post("/api/orders/:orderId/confirm-payment-source", async (req, res) => {
   const { orderId } = req.params;
   const { access_token } = await getAccessToken();
   
-  log.info("📦 Confirm Order Payload");
-  console.log(JSON.stringify(req.body, null, 4))
+  log.info("📦 Confirming Order");
 
   /**
    * For more details on /v2/checkout/orders/<orderId>/confirm-payment-source,
@@ -108,9 +103,6 @@ app.post("/api/orders/:orderId/confirm-payment-source", async (req, res) => {
   const redirectUrl = data.links.find((link) => link.rel === "payer-action")
     .href;
 
-  log.info("📦 Confirm Order Response");
-  console.log(JSON.stringify(data, null, 4))
-
   res.json({
     redirectUrl,
   });
@@ -122,30 +114,12 @@ app.post("/api/orders/:orderId/confirm-payment-source", async (req, res) => {
 app.post("/webhook", async (req, res) => {
   const { access_token } = await getAccessToken();
 
-  const { id, event_type, resource } = req.body;
+  const { event_type, resource } = req.body;
   const orderId = resource.id;
 
-  log.info(`🪝 Recieved Webhook Event Payload`)
-  console.log(JSON.stringify(req.body, null, 4))
+  log.info(`🪝 Recieved Webhook Event: ${event_type}`)
   
   /* verify the webhook signature */
-
-  /* ** skip ** validation while endpoint gets looked at
-  {
-    "name": "VALIDATION_ERROR",
-    "message": "Invalid request - see details",
-    "debug_id": "924631cb4acbe",
-    "details": [{
-        "field": "webhookId",
-        "value": "WH-64G99887NT8468436-37R34875Y77436504",
-        "location": "body",
-        "issue": "must match \"^[a-zA-Z0-9]+$\""
-    }],
-    "links": []
-  }
-  */
-
-  /*
   try {
     const { data } = await axios({
       url: `${PAYPAL_API_BASE}/v1/notifications/verify-webhook-signature`,
@@ -161,7 +135,7 @@ app.post("/webhook", async (req, res) => {
         cert_url: req.headers["paypal-cert-url"],
         auth_algo: req.headers["paypal-auth-algo"],
         transmission_sig: req.headers["paypal-transmission-sig"],
-        webhook_id: id,
+        webhook_id: WEBHOOK_ID,
         webhook_event: req.body,
       },
     });
@@ -176,7 +150,7 @@ app.post("/webhook", async (req, res) => {
     console.log(`⚠️  Webhook signature verification failed.`);
     return res.sendStatus(400);
   }
-  */
+  
 
   /* capture the order if approved */
   if (event_type === "CHECKOUT.ORDER.APPROVED") {
@@ -192,7 +166,6 @@ app.post("/webhook", async (req, res) => {
       });
 
       log.info(`💰 Payment captured!`);
-      console.log(JSON.stringify(data, null, 4))
 
     } catch (err) {
       log.error(`❌ Payment failed.`);
