@@ -1,18 +1,17 @@
-const loadingEl = document.getElementById("loading");
-const warningMsgEl = document.getElementById("warning");
-
+var loading = document.getElementById("loading");
+var warning = document.getElementById("warning");
 
 fetch("/api/orders")
   .then((res) => res.json())
   .then((order) => {
-    warningMsgEl.classList.add("hidden");
+    warning.classList.add("hidden");
 
-    const idealForm = document.getElementById("ideal-form");
+    var idealForm = document.getElementById("ideal-form");
 
     idealForm.addEventListener("submit", (e) => {
       e.preventDefault();
 
-      loadingEl.classList.remove("hidden");
+      loading.classList.remove("hidden");
 
       // Confirm the order
       fetch(`/api/orders/${order.id}/confirm-payment-source`, {
@@ -32,18 +31,17 @@ fetch("/api/orders")
       })
         .then((res) => res.json())
         .then(({ redirectUrl }) => {
-          console.log({ redirectUrl })
+          loading.classList.remove("hidden");
           window.location.href = redirectUrl;
-          loadingEl.classList.remove("hidden");
         })
         .catch((err) => {
           console.error(err)
-          loadingEl.classList.add("hidden");
-          warningMsgEl.classList.remove("hidden");
+          loading.classList.add("hidden");
+          warning.classList.remove("hidden");
         });
     });
   })
   .catch((err) => {
     console.error(err)
-    warningMsgEl.classList.remove("hidden");
+    warning.classList.remove("hidden");
   });

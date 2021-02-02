@@ -1,7 +1,7 @@
 const { Logger } = require("tslog");
 
 const log = new Logger({
-  name: "checkout",
+  name: "ideal-api-intergration",
   exposeStack: false,
   displayFilePath: "hidden",
   displayFunctionName: false,
