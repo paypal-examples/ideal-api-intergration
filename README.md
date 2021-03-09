@@ -4,7 +4,7 @@
 This integration uses Paypal's REST API to accept iDEAL payments
 
 
-See a [hosted version](https://demo-ideal-api-intergration.herokuapp.com/)
+See a [hosted version](https://ideal-api-intergration.herokuapp.com/)
 
 **Features:**
 - EUR Bank transfers 💶
